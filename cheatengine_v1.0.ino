@@ -35,7 +35,7 @@ int currPointer=0;
 int maxPageItems=0;
 String currentPage="main";
 String prevPage="";
-String masterPageList[]={"main","main/start/","main/config/","main/about/","main/start/cheatmode"};
+String masterPageList[]={"main","main/start/","main/config/","main/about/","main/start/cheatmode","/main/config/cheatconfig"};
 String pageMain[]={"Start","Config","About"};
 String pageStart[]={"Gta V","Max Payne","Vice City","San Andreas"};
 
@@ -54,7 +54,7 @@ String gameAttributes[][3]={
 
 char consoleKey=' ';
 String consoleToggle="no";
-
+String gameNameForConfig="";
 String gameCheatsButtons[sizeof(gameCheats)/sizeof(gameCheats[0])][sizeof(gameCheats[0])/sizeof(gameCheats[0][0])];
 
 String about[]={"Device Made By","    Raven","Date:","2024-7"};  //PUT ABOUT LATER
@@ -75,6 +75,7 @@ void dispCheats();
 void noCheatError();
 void setConsoleKey();
 void launchCheat(String);
+void displayCheatsConfig(String,String[][sizeof(gameCheats[0])/sizeof(gameCheats[0][0])]);
 String findCheat(String,String);
 
 
@@ -212,17 +213,20 @@ void setMaxPageItems()
   {
     maxPageItems=sizeof(pageMain)/sizeof(pageMain[0]);
   }
-  else if (currentPage.compareTo(masterPageList[1])==0) {
+  else if (currentPage.compareTo(masterPageList[1])==0) {  //main/start/
+    maxPageItems=sizeof(pageStart)/sizeof(pageStart[0]);
+  } 
+  else if (currentPage.compareTo(masterPageList[2])==0) { //main/start/
     maxPageItems=sizeof(pageStart)/sizeof(pageStart[0]);
   }
-  else if (currentPage.compareTo(masterPageList[2])==0) {
-    maxPageItems=sizeof(pageStart)/sizeof(pageStart[0]);
-  }
-  else if (currentPage.compareTo(masterPageList[3])==0) {
+  else if (currentPage.compareTo(masterPageList[3])==0) { //main/about/
     maxPageItems=sizeof(about)/sizeof(about[0]);
   }
-  else if (currentPage.compareTo(masterPageList[4])==0) {
+  else if (currentPage.compareTo(masterPageList[4])==0) { //main/start/cheatmode/
     maxPageItems=sizeof(gameCheats[0])/sizeof(gameCheats[0][0]);
+  }
+  else if (currentPage.compareTo(masterPageList[5])==0) { //main/config/cheatconfig/
+    maxPageItems=(sizeof(gameCheats[0])/sizeof(gameCheats[0][0]))-1;
   }
   else {
   //nothing
@@ -254,6 +258,60 @@ void setPage()
    else if(currentPage.compareTo(masterPageList[4])==0)//main/start/cheatmode
   {
     setMaxPageItems();
+  }
+   else if(currentPage.compareTo(masterPageList[5])==0)//main/config/cheatconfig
+  {
+    setMaxPageItems();
+    displayCheatsConfig(gameNameForConfig,gameCheats);
+  }
+}
+void displayCheatsConfig(String gameName,String cheat[][sizeof(gameCheats[0])/sizeof(gameCheats[0][0])])
+{
+for(int i=0;i<sizeof(gameCheats)/sizeof(gameCheats[0]);i++)
+  {
+    if(gameCheats[i][0].compareTo(gameName)==0)
+      {
+                                lcd.clear();
+                                if(maxPageItems%2!=0)
+                                  {
+                                          if((currPointer+1)==maxPageItems)
+                                          {
+                                          lcd.setCursor(1,0);
+                                          lcd.print(cheat[i][currPointer+1]);
+                                          }
+                                          else if((currPointer+1)%2!=0){
+                                          lcd.setCursor(1,0);
+                                          lcd.print(cheat[i][currPointer+1]);
+                                          lcd.setCursor(1,1);
+                                          lcd.print(cheat[i][currPointer+2]);
+                                          }
+                                          else if((currPointer+1)%2==0)
+                                          {
+                                          lcd.setCursor(1,0);
+                                          lcd.print(cheat[i][currPointer-1]);
+                                          lcd.setCursor(1,1);
+                                          lcd.print(cheat[i][currPointer+1]);
+                                          }
+                                  }
+                                else if(maxPageItems%2==0)
+                                  {
+                                  if((currPointer+1)%2!=0)
+                                  {
+                                    lcd.setCursor(1,0);
+                                    lcd.print(cheat[i][currPointer+1]);
+                                    lcd.setCursor(1,1);
+                                    lcd.print(cheat[i][currPointer+2]);
+                                  }
+                                  else if((currPointer+1)%2==0)
+                                    {
+                                    lcd.setCursor(1,0);
+                                    lcd.print(cheat[i][currPointer]);
+                                    lcd.setCursor(1,1);
+                                    lcd.print(cheat[i][currPointer+1]);
+                                    }
+                                 }
+                                 break;
+      }
   }
 }
 
@@ -305,6 +363,8 @@ void setPrevPage()
     prevPage=masterPageList[0];
   else if (currentPage.compareTo(masterPageList[4])==0)
     prevPage=masterPageList[1];
+  else if (currentPage.compareTo(masterPageList[5])==0)
+    prevPage=masterPageList[2];
 }
 
 
@@ -357,7 +417,7 @@ void selectCursor()
     {
       String toFireCheat="";
       String gameName=pageStart[currPointer];
-      currentPage=masterPageList[4];
+      currentPage=masterPageList[4];  //main/start/cheatmode/
       clearArrowPlace();
       setPage();
       buttonsInitialise();
@@ -420,6 +480,18 @@ void selectCursor()
          delay(100);
         }
       }
+    }
+    else if (currentPage.compareTo(masterPageList[2])==0)//main/config
+    {
+      gameNameForConfig=pageStart[currPointer];
+      currentPage=masterPageList[5];  //main/start/cheatmode/
+      resetPointer();
+      clearArrowPlace();
+      setPage();
+      placeArrow();
+      buttonsInitialise();
+      setPrevPage();
+
     }
     delay(300);
   }
