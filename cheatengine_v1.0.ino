@@ -47,7 +47,7 @@ String gameCheats[][5]={
 };
 String gameAttributes[][3]={
   {"Gta V","~","no"},
-  {"Max Payne","0XCD","yes"},
+  {"Max Payne","0xCD","yes"},
   {"Vice City"," ","no"},
   {"San Andreas"," ","no"}
 };
@@ -167,7 +167,7 @@ String findCheat(String gameName,String button)
 
 void launchCheat(String cheatName)
 {
-            lcd.setCursor(3,0);
+            lcd.setCursor(0,0);
             lcd.print(cheatName);
             lcd.setCursor(2,1);
             lcd.print("Activated");
