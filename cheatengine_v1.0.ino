@@ -33,6 +33,8 @@ int backBtn = 5;
 
 int currPointer=0;
 int maxPageItems=0;
+ int buttonValue=0;
+ 
 String currentPage="main";
 String prevPage="";
 String masterPageList[]={"main","main/start/","main/config/","main/about/","main/start/cheatmode","/main/config/cheatconfig"};
@@ -75,6 +77,7 @@ void dispCheats();
 void noCheatError();
 void setConsoleKey();
 void launchCheat(String);
+int dispButton(String);
 void displayCheatsConfig(String,String[][sizeof(gameCheats[0])/sizeof(gameCheats[0][0])]);
 String findCheat(String,String);
 
@@ -105,7 +108,7 @@ void buttonsInitialise()
 {
    for (int i=0;i<sizeof(gameCheats)/sizeof(gameCheats[0]);i++) 
   {
-      for (int j=0; j<maxPageItems; j++) 
+      for (int j=0; j<sizeof(gameCheats[0])/sizeof(gameCheats[0][0]); j++) 
       {
         if(j==0)                                        //game name->[i][0]
           gameCheatsButtons[i][j]=gameCheats[i][j];
@@ -152,18 +155,48 @@ void noCheatError()
 
 String findCheat(String gameName,String button)
 {
-  for (int i=0;i<sizeof(gameCheats)/sizeof(gameCheats[0]);i++) 
-  {
-    if(gameCheats[i][0].compareTo(gameName)==0)
+  if(button.compareTo("-1")!=0)
     {
-      for (int j=0; j<maxPageItems; j++) 
-      {
-      if(gameCheatsButtons[i][j].compareTo(button)==0)
-        return gameCheats[i][j];
+    for (int i=0;i<sizeof(gameCheats)/sizeof(gameCheats[0]);i++) 
+     {
+      if(gameCheats[i][0].compareTo(gameName)==0)
+        {
+        for (int j=0; j<sizeof(gameCheats[0])/sizeof(gameCheats[0][0]); j++) 
+          {
+          if(gameCheatsButtons[i][j].compareTo(button)==0)
+          return gameCheats[i][j];
+          }
+        }
       }
-    }
-  }
   return "";
+  }
+  else if(button.compareTo("-1")==0)
+  {
+     for (int i=0;i<sizeof(gameCheats)/sizeof(gameCheats[0]);i++) 
+      {
+        if(gameCheats[i][0].compareTo(gameName)==0)
+          {
+            return gameCheats[i][currPointer+1];
+          }
+        }
+      return "";
+  }
+}
+
+int dispButton(String cheatName)
+{
+  for(int i=0;i<sizeof(gameCheats)/sizeof(gameCheats[0]);i++)
+  {
+   if(gameCheats[i][0].compareTo(gameNameForConfig)==0)
+   {
+    for(int j=1;j<=sizeof(gameCheats[0])/sizeof(gameCheats[0][0]);j++)
+    {
+      if(gameCheats[i][j].compareTo(cheatName)==0)
+      return gameCheatsButtons[i][j].toInt();
+    }
+   }
+  }
+  return 0;
 }
 
 void launchCheat(String cheatName)
@@ -288,7 +321,7 @@ for(int i=0;i<sizeof(gameCheats)/sizeof(gameCheats[0]);i++)
                                           else if((currPointer+1)%2==0)
                                           {
                                           lcd.setCursor(1,0);
-                                          lcd.print(cheat[i][currPointer-1]);
+                                          lcd.print(cheat[i][currPointer]);
                                           lcd.setCursor(1,1);
                                           lcd.print(cheat[i][currPointer+1]);
                                           }
@@ -491,7 +524,13 @@ void selectCursor()
       placeArrow();
       buttonsInitialise();
       setPrevPage();
-
+    }
+     else if (currentPage.compareTo(masterPageList[5])==0)//main/config/cheatconfig
+    {
+      String cheatValue=findCheat(gameNameForConfig,"-1");
+      int buttonValue=dispButton(cheatValue);
+      Serial.println(buttonValue);
+      delay(6000);
     }
     delay(300);
   }
@@ -515,18 +554,27 @@ void serialDisp()
   Serial.print("\tCurrent Page=");
   Serial.print(currentPage);
   Serial.print("\tPrev- Page=");
-  Serial.println(currentPage);
+  Serial.print(currentPage);
+  Serial.print("\tGameName=");
+  Serial.println(gameNameForConfig);
 }
 
 void dispCheats()
 {
+  
   Serial.print("Max Page Items=\t");
   Serial.println(maxPageItems);
+
+  Serial.print("GameName=\t");
+  Serial.println(gameNameForConfig);
+
+  // Serial.print("Button=\t");
+  // Serial.println(dispButton("BOOM"));
 
   Serial.println("---------Game cheats----------");
      for (int i=0;i<sizeof(gameCheats)/sizeof(gameCheats[0]);i++) 
       {
-      for (int j=0; j<maxPageItems; j++) 
+      for (int j=0; j<sizeof(gameCheats[0])/sizeof(gameCheats[0][0]); j++) 
       {
         Serial.print(gameCheats[i][j]);
         Serial.print(" ");
@@ -536,7 +584,7 @@ void dispCheats()
   Serial.println("---------Game Buttons----------");
       for (int i=0;i<sizeof(gameCheats)/sizeof(gameCheats[0]);i++) 
       {
-      for (int j=0;j<maxPageItems;j++) 
+      for (int j=0;j<sizeof(gameCheats[0])/sizeof(gameCheats[0][0]);j++) 
       {
         Serial.print(gameCheatsButtons[i][j]);
         Serial.print(" ");
