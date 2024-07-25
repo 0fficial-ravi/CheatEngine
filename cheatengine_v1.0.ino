@@ -2,7 +2,6 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #define Ent 0xB0
-#define KEY_F12 0xCD
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 byte arrow[] = {
@@ -26,6 +25,37 @@ byte cleanArrow[] = {
   B00000
 };
 
+byte buttonArrows[] = {
+  B00100,
+  B01010,
+  B11111,
+  B00000,
+  B00000,
+  B11111,
+  B01010,
+  B00100
+};
+byte buttonArrowsUp[] = {
+  B00100,
+  B01110,
+  B11111,
+  B00000,
+  B00000,
+  B11111,
+  B01010,
+  B00100
+};
+
+byte buttonArrowsDwn[] = {
+  B00100,
+  B01010,
+  B11111,
+  B00000,
+  B00000,
+  B11111,
+  B01110,
+  B00100
+};
 int okBtn = 6;  
 int upBtn = 7;
 int dwnBtn = 4;
@@ -33,18 +63,18 @@ int backBtn = 5;
 
 int currPointer=0;
 int maxPageItems=0;
- int buttonValue=0;
+int buttonValue=0;
  
 String currentPage="main";
 String prevPage="";
-String masterPageList[]={"main","main/start/","main/config/","main/about/","main/start/cheatmode","/main/config/cheatconfig"};
+String masterPageList[]={"main","main/start/","main/config/","main/about/","main/start/cheatmode","/main/config/cheatconfig","/main/config/cheatconfig/buttonConfig"};
 String pageMain[]={"Start","Config","About"};
 String pageStart[]={"Gta V","Max Payne","Vice City","San Andreas"};
 
 String gameCheats[][5]={
   {"Gta V","LAWYERUP","TURTLE","TOOLUP","HIGHEX"},
   {"Max Payne","GetAllWeapons","GetInfiniteAmmo","GetHealth","GetMolotov"},
-  {"Vice City","LEAVEMEALONE","NUTTERTOOLS","PROFESSIONALTOOLS","BIGBANG"},
+  {"Vice City","LEAVEMEALONE","NUTTERTOOLS","THUGSTOOLS","BIGBANG"},
   {"San Andreas","TURNDOWNTHEHEAT","HESOYAM","LXGIWYL","CPKTNWT"}
 };
 String gameAttributes[][3]={
@@ -59,7 +89,7 @@ String consoleToggle="no";
 String gameNameForConfig="";
 String gameCheatsButtons[sizeof(gameCheats)/sizeof(gameCheats[0])][sizeof(gameCheats[0])/sizeof(gameCheats[0][0])];
 
-String about[]={"Device Made By","    Raven","Date:","2024-7"};  //PUT ABOUT LATER
+String about[]={"Device Made By","Ravi","Date:","2024-7"};
 
 void moveCursor();
 void selectCursor();
@@ -80,22 +110,57 @@ void launchCheat(String);
 int dispButton(String);
 void displayCheatsConfig(String,String[][sizeof(gameCheats[0])/sizeof(gameCheats[0][0])]);
 String findCheat(String,String);
+void displayButton();
+void resetGameName();
+void setButton(String,String);
 
-
-
-
+void welcome()
+{
+delay(1000);
+lcd.setCursor(3,0);
+lcd.print("Welcome to");
+delay(1000);
+lcd.setCursor(0,1);
+lcd.print("CheatEngine v1.0");
+delay(2000);
+lcd.clear();
+}
+void resetGameName()
+{
+gameNameForConfig="";
+}
+void setButton(String gameName,String cheatName)
+{
+    for (int i=0;i<sizeof(gameCheats)/sizeof(gameCheats[0]);i++) 
+     {
+      if(gameCheats[i][0].compareTo(gameName)==0)
+        {
+        for (int j=1; j<sizeof(gameCheats[0])/sizeof(gameCheats[0][0]); j++) 
+          {
+          if(gameCheats[i][j].compareTo(cheatName)==0)
+            gameCheatsButtons[i][j]=String(buttonValue);
+          }
+        }
+      }
+}
+void displayButton()
+{
+  lcd.clear();
+  lcd.setCursor(6,0);
+  lcd.print(buttonValue);
+  lcd.setCursor(7,0);
+  lcd.write(2);
+}
 void resetPointer()
 {
   currPointer=0;
 }
-
 void placeArrow()
 {
   clearArrowPlace();
   lcd.setCursor(0,currPointer%2);
   lcd.write(0);
 }
-
 void clearArrowPlace()
 {
   lcd.setCursor(0,0);
@@ -103,7 +168,6 @@ void clearArrowPlace()
   lcd.setCursor(0,1);
   lcd.write(1);
 }
-
 void buttonsInitialise()
 {
    for (int i=0;i<sizeof(gameCheats)/sizeof(gameCheats[0]);i++) 
@@ -182,7 +246,6 @@ String findCheat(String gameName,String button)
       return "";
   }
 }
-
 int dispButton(String cheatName)
 {
   for(int i=0;i<sizeof(gameCheats)/sizeof(gameCheats[0]);i++)
@@ -252,7 +315,7 @@ void setMaxPageItems()
   else if (currentPage.compareTo(masterPageList[2])==0) { //main/start/
     maxPageItems=sizeof(pageStart)/sizeof(pageStart[0]);
   }
-  else if (currentPage.compareTo(masterPageList[3])==0) { //main/about/
+   else if (currentPage.compareTo(masterPageList[3])==0) { //main/about/
     maxPageItems=sizeof(about)/sizeof(about[0]);
   }
   else if (currentPage.compareTo(masterPageList[4])==0) { //main/start/cheatmode/
@@ -260,9 +323,6 @@ void setMaxPageItems()
   }
   else if (currentPage.compareTo(masterPageList[5])==0) { //main/config/cheatconfig/
     maxPageItems=(sizeof(gameCheats[0])/sizeof(gameCheats[0][0]))-1;
-  }
-  else {
-  //nothing
   }
 }
 
@@ -283,7 +343,7 @@ void setPage()
     setMaxPageItems();
     displayPage(pageStart);
   }
-  else if(currentPage.compareTo(masterPageList[3])==0)//main/about/
+   else if(currentPage.compareTo(masterPageList[3])==0)//main/about/
   {
     setMaxPageItems();
     displayPage(about);
@@ -296,6 +356,10 @@ void setPage()
   {
     setMaxPageItems();
     displayCheatsConfig(gameNameForConfig,gameCheats);
+  }
+   else if(currentPage.compareTo(masterPageList[6])==0)//main/config/cheatconfig/buttonConfig
+  {
+    displayButton();
   }
 }
 void displayCheatsConfig(String gameName,String cheat[][sizeof(gameCheats[0])/sizeof(gameCheats[0][0])])
@@ -398,29 +462,54 @@ void setPrevPage()
     prevPage=masterPageList[1];
   else if (currentPage.compareTo(masterPageList[5])==0)
     prevPage=masterPageList[2];
+  else if (currentPage.compareTo(masterPageList[6])==0)
+    prevPage=masterPageList[5];
 }
 
 
 void moveCursor()
 {
-  if (digitalRead(upBtn) == HIGH ){
-  if(currPointer>0){
-  currPointer--;
-  setPage();
-  if(currentPage.compareTo(masterPageList[3])!=0)
-  placeArrow();
-  delay(300);
+  if (digitalRead(upBtn) == HIGH )
+  {
+    if(currPointer>0 && currentPage.compareTo(masterPageList[6])!=0)
+      {
+      currPointer--;
+      setPage();
+      if(currentPage.compareTo(masterPageList[3])!=0 && currentPage.compareTo(masterPageList[6])!=0)
+      placeArrow();
+      }
+      if(currentPage.compareTo(masterPageList[6])==0)
+      {
+            if(buttonValue>1)
+            {
+              buttonValue--;
+              setPage();
+              lcd.setCursor(7,0);
+              lcd.write(3);
+            }
+      }
+      delay(300);
   }
-  }
-  if (digitalRead(dwnBtn) == HIGH){
-  if(currPointer<maxPageItems-1){
-  currPointer++;
-  setPage();
-  if(currentPage.compareTo(masterPageList[3])!=0)
-  placeArrow();
-  delay(300); 
-  }
-  }
+  if (digitalRead(dwnBtn) == HIGH)
+    {
+    if(currPointer<maxPageItems-1 && currentPage.compareTo(masterPageList[6])!=0)
+      {
+      currPointer++;
+      setPage();
+      if(currentPage.compareTo(masterPageList[3])!=0 && currentPage.compareTo(masterPageList[6])!=0)
+      placeArrow();
+      }
+      if(currentPage.compareTo(masterPageList[6])==0)
+            {
+            if(buttonValue<4){
+            buttonValue++;
+            setPage();
+            lcd.setCursor(7,0);
+            lcd.write(4);
+            }
+      }
+      delay(300); 
+    }
 }
 void selectCursor()
 {
@@ -453,7 +542,6 @@ void selectCursor()
       currentPage=masterPageList[4];  //main/start/cheatmode/
       clearArrowPlace();
       setPage();
-      buttonsInitialise();
       setPrevPage();
       setConsoleKey(gameName);
       cheatStartNotification(gameName);
@@ -465,7 +553,7 @@ void selectCursor()
          currentPage=prevPage;
          setPage();
          placeArrow();
-         delay(300);
+         delay(100);
          break; 
         }
         else if (digitalRead(okBtn)==HIGH)
@@ -475,9 +563,10 @@ void selectCursor()
          {
           launchCheat(toFireCheat);
          }
-         else
+         else if(toFireCheat.compareTo("")==0){
          noCheatError();
-         delay(300);
+         }
+         delay(100);
         }
          else if (digitalRead(upBtn)==HIGH)
         {
@@ -486,8 +575,9 @@ void selectCursor()
          {
           launchCheat(toFireCheat);
          }
-         else
+        else if(toFireCheat.compareTo("")==0){
          noCheatError();
+         }
          delay(100);
         }
          else if (digitalRead(dwnBtn)==HIGH)
@@ -497,8 +587,9 @@ void selectCursor()
          {
          launchCheat(toFireCheat);
          }
-         else
+         else if(toFireCheat.compareTo("")==0){
          noCheatError();
+         }
          delay(100);
         }
          else if (digitalRead(backBtn)==HIGH)
@@ -508,8 +599,9 @@ void selectCursor()
          {
          launchCheat(toFireCheat);
          }
-         else
+        else if(toFireCheat.compareTo("")==0){
          noCheatError();
+         }
          delay(100);
         }
       }
@@ -522,20 +614,42 @@ void selectCursor()
       clearArrowPlace();
       setPage();
       placeArrow();
-      buttonsInitialise();
       setPrevPage();
     }
      else if (currentPage.compareTo(masterPageList[5])==0)//main/config/cheatconfig
     {
+      clearArrowPlace();
+      currentPage=masterPageList[6];
       String cheatValue=findCheat(gameNameForConfig,"-1");
-      int buttonValue=dispButton(cheatValue);
-      Serial.println(buttonValue);
-      delay(6000);
-    }
-    delay(300);
+      buttonValue=dispButton(cheatValue);
+      setPrevPage();  
+      setPage();
+      while(1) 
+      {
+        moveCursor();    
+        if(digitalRead(backBtn)==HIGH)
+        {
+          currentPage=prevPage;
+          setPage();
+          placeArrow();
+          delay(300);
+          break;
+        }
+        else if(digitalRead(okBtn)==HIGH)
+        {
+          setButton(gameNameForConfig,cheatValue);
+          lcd.setCursor(7,0);
+          lcd.write(2);
+          delay(300);
+        }       
+        }
+  }
+  delay(300);
   }
   else if(digitalRead(backBtn)==HIGH)
   {
+    if(currentPage.compareTo(masterPageList[6])!=0)
+      resetGameName();
     setPrevPage();
     currentPage=prevPage;
     resetPointer();
@@ -545,68 +659,21 @@ void selectCursor()
   }
 }
 
-void serialDisp()
-{
-  Serial.print("Current Pointer=");
-  Serial.print(currPointer);
-  Serial.print("\tMax Items=");
-  Serial.print(maxPageItems);
-  Serial.print("\tCurrent Page=");
-  Serial.print(currentPage);
-  Serial.print("\tPrev- Page=");
-  Serial.print(currentPage);
-  Serial.print("\tGameName=");
-  Serial.println(gameNameForConfig);
-}
-
-void dispCheats()
-{
-  
-  Serial.print("Max Page Items=\t");
-  Serial.println(maxPageItems);
-
-  Serial.print("GameName=\t");
-  Serial.println(gameNameForConfig);
-
-  // Serial.print("Button=\t");
-  // Serial.println(dispButton("BOOM"));
-
-  Serial.println("---------Game cheats----------");
-     for (int i=0;i<sizeof(gameCheats)/sizeof(gameCheats[0]);i++) 
-      {
-      for (int j=0; j<sizeof(gameCheats[0])/sizeof(gameCheats[0][0]); j++) 
-      {
-        Serial.print(gameCheats[i][j]);
-        Serial.print(" ");
-      }
-      Serial.println();
-  }
-  Serial.println("---------Game Buttons----------");
-      for (int i=0;i<sizeof(gameCheats)/sizeof(gameCheats[0]);i++) 
-      {
-      for (int j=0;j<sizeof(gameCheats[0])/sizeof(gameCheats[0][0]);j++) 
-      {
-        Serial.print(gameCheatsButtons[i][j]);
-        Serial.print(" ");
-      }
-      Serial.println();
-  }
-}
-
-
-
 void setup() {
   lcd.init();
   lcd.backlight();
   lcd.createChar(0,arrow);
   lcd.createChar(1,cleanArrow);
+  lcd.createChar(2,buttonArrows);
+  lcd.createChar(3,buttonArrowsUp);
+  lcd.createChar(4,buttonArrowsDwn);
+  welcome();
+  buttonsInitialise();
   setPage();
   placeArrow();
-  Serial.begin(9600);
 }
 
 void loop(){
-  serialDisp();
   moveCursor();
   selectCursor();
 }
